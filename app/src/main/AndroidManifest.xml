@@ -16,7 +16,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".OptionsScreen" android:parentActivityName=".HomeScreen"></activity>
+        <activity
+            android:name=".PlayerCount"
+            android:parentActivityName=".HomeScreen" />
+        <activity
+            android:name=".NamePlayers"
+            android:parentActivityName=".PlayerCount" />
+        <activity android:name=".GameState"></activity>
     </application>
 
 </manifest>
