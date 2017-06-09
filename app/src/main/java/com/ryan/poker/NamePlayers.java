@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.InputType;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -35,8 +36,10 @@ public class NamePlayers extends AppCompatActivity {
             playerLabels[i].setTextSize(25);
             playerNameScroll.addView(playerLabels[i]);
             playerNames[i] = new EditText(this);
-            playerNames[i].setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+            playerNames[i].setLayoutParams(new LinearLayout.LayoutParams(1000, LinearLayout.LayoutParams.WRAP_CONTENT));
+            playerNames[i].setSingleLine(true);
             playerNames[i].setTextSize(25);
+            playerNames[i].setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
             playerNameScroll.addView(playerNames[i]);
         }
 
@@ -52,8 +55,13 @@ public class NamePlayers extends AppCompatActivity {
                             duplicates = true;
                     }
                 }
-                if(!duplicates)
-                    sendPlayerCount(playerNames[0].getText().toString(), playerNames[1].getText().toString());
+                if(!duplicates) {
+                    String[] playerNameArray = new String[playerAmount];
+                    for(int i = 0; i < playerAmount; i++) {
+                        playerNameArray[i] = playerNames[i].getText().toString();
+                    }
+                    sendPlayerCount(playerNameArray);
+                }
                 else{
                     AlertDialog.Builder builder = new AlertDialog.Builder(context, android.R.style.Theme_Material_Dialog_Alert);
                     builder.setTitle("Error")
@@ -69,11 +77,18 @@ public class NamePlayers extends AppCompatActivity {
         playerNameScroll.addView(Enter);
     }
 
-    public void sendPlayerCount(String player1, String player2){
+    public void sendPlayerCount(String[] playerNameArray){
         Intent intent = new Intent (this, GameState.class);
         Bundle extras = new Bundle();
-        extras.putString("player1Name",player1);
-        extras.putString("player2Name",player2);
+        int[] playerMoneyArray = new int[playerNameArray.length];
+        for(int i = 0; i < playerNameArray.length; i++){
+            playerMoneyArray[i] = 20000;
+        }
+        extras.putStringArray("com.ryan.poker.playerNameArray",playerNameArray);
+        extras.putIntArray("com.ryan.poker.playerMoneyArray",playerMoneyArray);
+        extras.putInt("com.ryan.poker.blind",0);
+        extras.putInt("com.ryan.poker.smallBlind",400);
+        extras.putInt("com.ryan.poker.gameRound",1);
         intent.putExtras(extras);
         startActivity(intent);
     }
