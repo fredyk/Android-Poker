@@ -22,7 +22,8 @@
         <activity
             android:name=".NamePlayers"
             android:parentActivityName=".PlayerCount" />
-        <activity android:name=".GameState"></activity>
+        <activity android:name=".GameState" />
+        <activity android:name=".PlayGame"></activity>
     </application>
 
 </manifest>

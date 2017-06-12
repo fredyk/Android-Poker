@@ -60,7 +60,7 @@ public class NamePlayers extends AppCompatActivity {
                     for(int i = 0; i < playerAmount; i++) {
                         playerNameArray[i] = playerNames[i].getText().toString();
                     }
-                    sendPlayerCount(playerNameArray);
+                    sendPlayerInfo(playerNameArray);
                 }
                 else{
                     AlertDialog.Builder builder = new AlertDialog.Builder(context, android.R.style.Theme_Material_Dialog_Alert);
@@ -77,7 +77,7 @@ public class NamePlayers extends AppCompatActivity {
         playerNameScroll.addView(Enter);
     }
 
-    public void sendPlayerCount(String[] playerNameArray){
+    public void sendPlayerInfo(String[] playerNameArray){
         Intent intent = new Intent (this, GameState.class);
         Bundle extras = new Bundle();
         int[] playerMoneyArray = new int[playerNameArray.length];
