@@ -91,4 +91,8 @@ public class GameState extends AppCompatActivity {
         intent.putExtras(extras);
         startActivity(intent);
     }
+
+    @Override
+    public void onBackPressed() {
+    }
 }

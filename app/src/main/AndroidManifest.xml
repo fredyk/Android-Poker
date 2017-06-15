@@ -23,7 +23,9 @@
             android:name=".NamePlayers"
             android:parentActivityName=".PlayerCount" />
         <activity android:name=".GameState" />
-        <activity android:name=".PlayGame"></activity>
+        <activity android:name=".PlayGame" />
+        <activity android:name=".GameOver" />
+        <activity android:name=".RoundWinner"></activity>
     </application>
 
 </manifest>

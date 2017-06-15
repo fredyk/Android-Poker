@@ -32,78 +32,42 @@ public class Game {
     }
 
     public static void takeTurn(Player currentPlayer, ArrayList<Player> players, Board currentGame, String decision) {
-        //system("cls"); //clear console
-        String userDecision; //string for user input (ex: fold, bet, etc.)
-        System.out.println("It is now your turn " + currentPlayer.printName());
-        Scanner reader = new Scanner(System.in);
-        for (int i = 0; i < players.size(); i++) { //print out all users name and money
-            if (players.get(i).printState().equals("active|nb") || players.get(i).printState().equals("active|b"))
-                System.out.print(players.get(i).printName() + " - $" + players.get(i).printMoney() + "   ");
-            if (players.get(i).printState().equals("folded"))
-                System.out.print(players.get(i).printName() + " (folded)- $" + players.get(i).printMoney() + "   ");
+        if (decision.equals("Fold")) { //set the users state to fold and end turn
+            currentPlayer.setState("folded");
         }
-        System.out.println("Pot - $" + currentGame.getPot()); //print out amount in pot
-        System.out.println("River: " + currentGame.getRiver().print()); //print out cards in river
-        while (true) {
-            if ((currentGame.getMaxBet() - currentPlayer.getAmountBet()) == 0 || currentPlayer.printMoney() == 0) {
-                System.out.println("The following commands are available: Hand, Fold, Check, Bet");
-                System.out.print("> ");
-                userDecision = reader.nextLine();
+        else if (decision.equals("Call")) { //bet the amount required and end turn
+            if (currentPlayer.printMoney() < (currentGame.getMaxBet() - currentPlayer.getAmountBet())) {
+                currentGame.addToPot(currentPlayer.bet(currentPlayer.printMoney()));
             }
-            else if (currentPlayer.printMoney() < (currentGame.getMaxBet() - currentPlayer.getAmountBet())) { //if they do not have enough to fully call, let them go all in
-                System.out.println("The following commands are available: Hand, Fold, Call($" + currentPlayer.printMoney() + "), Bet");
-                System.out.print("> ");
-                userDecision = reader.nextLine();
-            }
-            else {
-                System.out.println("The following commands are available: Hand, Fold, Call($" + (currentGame.getMaxBet() - currentPlayer.getAmountBet()) + "), Bet");
-                System.out.print("> ");
-                userDecision = reader.nextLine();
-            }
-            if (userDecision.equals("Hand")) { //show user their hand
-                System.out.println(currentPlayer.getHand().print());
-            }
-            else if (userDecision.equals("Fold")) { //set the users state to fold and end turn
-                currentPlayer.setState("folded");
-                break;
-            }
-            else if ((currentGame.getMaxBet() - currentPlayer.getAmountBet()) != 0 && userDecision.equals("Call")) { //bet the amount required and end turn
-                if (currentPlayer.printMoney() < (currentGame.getMaxBet() - currentPlayer.getAmountBet())) {
-                    currentGame.addToPot(currentPlayer.bet(currentPlayer.printMoney()));
-                }
-                else //if they have enough money to call then bet that amount
-                    currentGame.addToPot(currentPlayer.bet(currentGame.getMaxBet() - currentPlayer.getAmountBet()));
-                currentPlayer.setState("active|b");
-                break;
-            }
-            else if (((currentGame.getMaxBet() - currentPlayer.getAmountBet()) == 0 || currentPlayer.printMoney() == 0) && userDecision.equals("Check")) { //set state to have bet and move to next player
-                currentPlayer.setState("active|b");
-                break;
-            }
-            else if (userDecision.equals("Bet")) { //request the amount the user wants to bet and then end turn
-                int betAmount;
-                while (true) {
-                    System.out.print("Insert the amount you want to bet: ");
-                    betAmount = reader.nextInt();
-                    reader.nextLine();
-                    if (betAmount <= (currentGame.getMaxBet() - currentPlayer.getAmountBet()) || betAmount > currentPlayer.printMoney())
-                        System.out.println("Invalid bet amount.");
-                    else
-                        break;
-                }
-                currentGame.addToPot(currentPlayer.bet(betAmount));
-                currentGame.setMaxBet(currentPlayer.getAmountBet());
-                currentPlayer.setState("active|b");
-                for(int i = 0; i < players.size(); i++){
-                    if(!currentPlayer.printName().equals(players.get(i).printName()) && !players.get(i).printState().equals("folded"))
-                        players.get(i).setState("active|nb");
-                }
-                break;
-            }
-            else {
-                System.out.println("Invalid input.");
-            }
+            else //if they have enough money to call then bet that amount
+                currentGame.addToPot(currentPlayer.bet(currentGame.getMaxBet() - currentPlayer.getAmountBet()));
+            currentPlayer.setState("active|b");
         }
+        else if (decision.equals("Check")) { //set state to have bet and move to next player
+            currentPlayer.setState("active|b");
+        }
+        /*
+        else if (decision.equals("Bet")) { //request the amount the user wants to bet and then end turn
+            int betAmount;
+            while (true) {
+                System.out.print("Insert the amount you want to bet: ");
+                betAmount = reader.nextInt();
+                reader.nextLine();
+                if (betAmount <= (currentGame.getMaxBet() - currentPlayer.getAmountBet()) || betAmount > currentPlayer.printMoney())
+                    System.out.println("Invalid bet amount.");
+                else
+                    break;
+            }
+            currentGame.addToPot(currentPlayer.bet(betAmount));
+            currentGame.setMaxBet(currentPlayer.getAmountBet());
+            currentPlayer.setState("active|b");
+            for(int i = 0; i < players.size(); i++){
+                if(!currentPlayer.printName().equals(players.get(i).printName()) && !players.get(i).printState().equals("folded"))
+                    players.get(i).setState("active|nb");
+            }
+            break;
+        }
+        */
     }
 
     public static void roundSetup(Board currentGame, ArrayList<Player> players, int blind, int smallBlind, CardSet deck){
@@ -124,7 +88,8 @@ public class Game {
         currentGame.setMaxBet(smallBlind * 2);
     }
 
-    public static void iterateRound(Board currentGame, ArrayList<Player> players, int round, CardSet deck) {
+    public static ArrayList<String> iterateRound(Board currentGame, ArrayList<Player> players, int round, CardSet deck) {
+        ArrayList<String> out = new ArrayList();
         int currentPlayers = 0;
         for (int i = 0; i < players.size(); i++) { //find amount of players still in round
             if (players.get(i).printState().equals("active|nb") || players.get(i).printState().equals("active|b"))
@@ -147,6 +112,7 @@ public class Game {
                         players.get(j).setState("active|nb");
                 }
                 round++;
+                out.add("nextRound");
             }
             else if (round == 2 || round == 3) { //1 card into the river on 2nd and 3rd rounds
                 currentGame.addToRiver(deck.getFirst());
@@ -156,6 +122,7 @@ public class Game {
                         players.get(i).setState("active|nb");
                 }
                 round++;
+                out.add("nextRound");
             }
             else if (round == 4) { //find winner at end of round
                 ArrayList<Player> finalists = new ArrayList();
@@ -175,7 +142,7 @@ public class Game {
                             if (players.get(i).printName().equals(winners.get(0).printName())) {
                                 if (players.get(i).getAmountBet() == currentGame.getMaxBet()) {
                                     players.get(i).editMoney(currentGame.getPot());
-                                    System.out.println(players.get(i).printName() + " has won the pot!");
+                                    out.add(players.get(i).printName() + " has won the pot!");
                                     currentGame.clearPot();
                                 }
                                 else {
@@ -195,7 +162,8 @@ public class Game {
                                             players.get(j).setAmountBet(players.get(j).getAmountBet() - players.get(j).getAmountBet());
                                         }
                                     }
-                                    System.out.println(players.get(i).printName() + " has won a side pot for $" + sidePotAmount + "!");
+
+                                    out.add(players.get(i).printName() + " has won a side pot for $" + sidePotAmount + "!");
                                     for (int j = 0; j < finalists.size(); j++) {
                                         if (finalists.get(j).printName().equals(removeName)) {
                                             finalists.remove(j);
@@ -217,12 +185,12 @@ public class Game {
                                     if (players.get(j).getAmountBet() == currentGame.getMaxBet()) { //if theyve paid the potSplit amount, they get their money back
                                         sidePotAmount = potSplit;
                                         players.get(j).editMoney(potSplit);
-                                        System.out.print(players.get(j).printName() + " ");
+                                        out.add(players.get(j).printName() + " ");
                                         currentGame.clearPot();
                                     }
                                     else {
                                         String removeName = players.get(j).printName();
-                                        System.out.print(removeName + " ");
+                                        out.add(removeName + " ");
                                         for (int k = 0; k < players.size(); k++) {
                                             if (players.get(k).getAmountBet() >= players.get(j).getAmountBet()) {
                                                 sidePotAmount += players.get(j).getAmountBet();
@@ -252,44 +220,40 @@ public class Game {
                                 }
                             }
                         }
-                        System.out.println(" have split the pot for $" + sidePotAmount + " each!");
+                        out.add(" have split the pot for $" + sidePotAmount + " each!");
                     }
                     if (finalists.size() == 0)
                         currentGame.clearPot();
                 }
-                for (int i = 0; i < players.size(); i++) { //print out all users name and money
-                    if (players.get(i).printState().equals("active|nb") || players.get(i).printState().equals("active|b"))
-                        System.out.print(players.get(i).printName() + " - $" + players.get(i).printMoney() + "   ");
-                    if (players.get(i).printState().equals("folded"))
-                        System.out.print(players.get(i).printName() + " (folded)- $" + players.get(i).printMoney() + "   ");
-                }
-                System.out.println("\n" + "River: " + currentGame.getRiver().print()); //print out cards in river
 
                 for (int i = 0; i < players.size(); i++) {
                     if (!players.get(i).printState().equals("folded")) {
-                        System.out.print(players.get(i).printName() + " - ");
+                        out.add(players.get(i).printName() + " - ");
                         if (players.get(i).getHandResults().get(0) == 9)
-                            System.out.print("Straight flush");
+                            out.add("Straight flush");
                         else if (players.get(i).getHandResults().get(0) == 8)
-                            System.out.print("Four of a kind");
+                            out.add("Four of a kind");
                         else if (players.get(i).getHandResults().get(0) == 7)
-                            System.out.print("Full house");
+                            out.add("Full house");
                         else if (players.get(i).getHandResults().get(0) == 6)
-                            System.out.print("Flush");
+                            out.add("Flush");
                         else if (players.get(i).getHandResults().get(0) == 5)
-                            System.out.print("Straight");
+                            out.add("Straight");
                         else if (players.get(i).getHandResults().get(0) == 4)
-                            System.out.print("Three of a kind");
+                            out.add("Three of a kind");
                         else if (players.get(i).getHandResults().get(0) == 3)
-                            System.out.print("Two pair");
+                            out.add("Two pair");
                         else if (players.get(i).getHandResults().get(0) == 2)
-                            System.out.print("One pair");
+                            out.add("One pair");
                         else if (players.get(i).getHandResults().get(0) == 1)
-                            System.out.print("High card");
-                        System.out.println(" ( " + players.get(i).getHand().print() + ")");
+                            out.add("High card");
+                        out.add(" ( " + players.get(i).getHand().print() + ")");
                     }
                 }
             }
         }
+        else
+            out.add("continue");
+        return out;
     }
 }
