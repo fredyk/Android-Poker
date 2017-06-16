@@ -90,6 +90,7 @@ public class GameState extends AppCompatActivity {
         extras.putInt("com.ryan.poker.gameRound",gameRound);
         intent.putExtras(extras);
         startActivity(intent);
+        finish();
     }
 
     @Override

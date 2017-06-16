@@ -31,7 +31,7 @@ public class Game {
         return output;
     }
 
-    public static void takeTurn(Player currentPlayer, ArrayList<Player> players, Board currentGame, String decision) {
+    public static void takeTurn(Player currentPlayer, ArrayList<Player> players, Board currentGame, String decision, int betAmount) {
         if (decision.equals("Fold")) { //set the users state to fold and end turn
             currentPlayer.setState("folded");
         }
@@ -46,18 +46,7 @@ public class Game {
         else if (decision.equals("Check")) { //set state to have bet and move to next player
             currentPlayer.setState("active|b");
         }
-        /*
         else if (decision.equals("Bet")) { //request the amount the user wants to bet and then end turn
-            int betAmount;
-            while (true) {
-                System.out.print("Insert the amount you want to bet: ");
-                betAmount = reader.nextInt();
-                reader.nextLine();
-                if (betAmount <= (currentGame.getMaxBet() - currentPlayer.getAmountBet()) || betAmount > currentPlayer.printMoney())
-                    System.out.println("Invalid bet amount.");
-                else
-                    break;
-            }
             currentGame.addToPot(currentPlayer.bet(betAmount));
             currentGame.setMaxBet(currentPlayer.getAmountBet());
             currentPlayer.setState("active|b");
@@ -65,9 +54,7 @@ public class Game {
                 if(!currentPlayer.printName().equals(players.get(i).printName()) && !players.get(i).printState().equals("folded"))
                     players.get(i).setState("active|nb");
             }
-            break;
         }
-        */
     }
 
     public static void roundSetup(Board currentGame, ArrayList<Player> players, int blind, int smallBlind, CardSet deck){
