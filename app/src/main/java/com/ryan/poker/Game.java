@@ -4,19 +4,14 @@ package com.ryan.poker;
  * Created by Ryan on 6/11/2017.
  */
 
-import android.app.Activity;
-import android.content.Context;
-import android.widget.TextView;
-
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Scanner;
 
 public class Game {
-    public static ArrayList<Player> playerSetup(String[] playerNameArray, int[] playerMoneyArray) {
+    public static ArrayList<Player> playerSetup(String[] playerNameArray, int playerStartingMoney) {
         ArrayList<Player> players = new ArrayList();
         for (int i = 0; i < playerNameArray.length; i++)//Set up vector of players
-            players.add(new Player(playerNameArray[i], playerMoneyArray[i]));
+            players.add(new Player(playerNameArray[i], playerStartingMoney));
         return players;
     }
 
@@ -31,7 +26,7 @@ public class Game {
         return output;
     }
 
-    public static void takeTurn(Player currentPlayer, ArrayList<Player> players, Board currentGame, String decision, int betAmount) {
+    public static void turnAction(Player currentPlayer, ArrayList<Player> players, Board currentGame, String decision, int betAmount) {
         if (decision.equals("Fold")) { //set the users state to fold and end turn
             currentPlayer.setState("folded");
         }
@@ -75,7 +70,7 @@ public class Game {
         currentGame.setMaxBet(smallBlind * 2);
     }
 
-    public static ArrayList<String> iterateRound(Board currentGame, ArrayList<Player> players, int round, CardSet deck) {
+    public static ArrayList<String> iterateBetRound(Board currentGame, ArrayList<Player> players, int round, CardSet deck) {
         ArrayList<String> out = new ArrayList();
         int currentPlayers = 0;
         for (int i = 0; i < players.size(); i++) { //find amount of players still in round

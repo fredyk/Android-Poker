@@ -1,213 +1,123 @@
 package com.ryan.poker;
 
-import android.app.Dialog;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.graphics.Typeface;
-import android.support.v7.app.AlertDialog;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.Editable;
-import android.view.Gravity;
-import android.view.View;
-import android.widget.Button;
-import android.widget.LinearLayout;
-import android.widget.NumberPicker;
-import android.widget.SeekBar;
-import android.widget.TextView;
 
-import java.lang.reflect.Array;
-import java.nio.channels.SelectionKey;
 import java.util.ArrayList;
 
-public class PlayGame extends AppCompatActivity {
+public class PlayGame extends AppCompatActivity implements GameState.Listener, PlayGameUserInput.Listener, RoundOver.Listener {
+    //Fragments
+    GameState gameState;
+    PlayGameUserInput playGameUserInput;
+    RoundOver roundOver;
+
+    //initialize game variables
+    Board currentGame = new Board();
+    int playerStartingMoney = 20000; //players start with $20000
+    int smallBlind = 400; //small blind is $400
+    int blind = 0; //start blind with first player
+    int gameRound = 1; //start with first round
+    ArrayList<Player> players = new ArrayList<>();
+    int loop;
+    int round = 1;
+    CardSet deck = new CardSet();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_play_game);
 
+        //Get player names from previous page
         Bundle extras = getIntent().getExtras();
         String[] playerNameArray = extras.getStringArray("com.ryan.poker.playerNameArray");
-        int[] playerMoneyArray = extras.getIntArray("com.ryan.poker.playerMoneyArray");
-        int blind = extras.getInt("com.ryan.poker.blind");
-        int smallBlind = extras.getInt("com.ryan.poker.smallBlind");
-        int gameRound = extras.getInt("com.ryan.poker.gameRound");
+        players = Game.playerSetup(playerNameArray, playerStartingMoney);
+        loop = (blind + 2) % players.size();
 
-        Board currentGame = new Board();
-        ArrayList<Player> players = Game.playerSetup(playerNameArray, playerMoneyArray);
+        gameState = new GameState();
+        playGameUserInput = new PlayGameUserInput();
+        roundOver = new RoundOver();
 
-        CardSet deck = new CardSet();
-        deck = Functions.populate(deck); //fill deck w/ all 52 cards
-        deck.shuffle(); //randomize deck
+        gameState.setListener(this);
+        playGameUserInput.setListener(this);
+        roundOver.setListener(this);
 
-        Game.roundSetup(currentGame, players, blind, smallBlind, deck);
+        gameState.setArguments(players, blind, smallBlind, gameRound);
+        playGameUserInput.setArguments(currentGame, players, loop);
 
-        int loop = (blind + 2) % players.size();
-        int round = 1;
 
-        screenSetup(currentGame, players, round, deck, loop, blind, smallBlind, gameRound);
+        //start by showing game state
+        getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, gameState).commit();
     }
 
-    public void screenSetup(final Board currentGame, final ArrayList<Player> players, int round, CardSet deck, int loop, int blind, int smallBlind, int gameRound){
-        ArrayList<String> roundOver;
-        roundOver = Game.iterateRound(currentGame, players, round, deck);
-        if(!roundOver.get(0).equals("continue") && !roundOver.get(0).equals("nextRound")){
-            roundOver(players, blind, smallBlind, gameRound, roundOver);
+    // Switch UI to the given fragment
+    void switchToFragment(Fragment newFrag) {
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, newFrag).commit();
+    }
+
+    @Override
+    public void onStartRoundButtonClicked(){
+        startRound();
+    }
+
+    @Override
+    public void onFoldButtonClicked(){
+        Game.turnAction(players.get(loop), players, currentGame, "Fold", 0);
+        loop = (loop + 1) % players.size();
+        takeTurn();
+    }
+
+    @Override
+    public void onCallButtonClicked(){
+        String callButtonText = Game.callButton(players.get(loop), currentGame);
+        if(callButtonText.equals("Check"))
+            Game.turnAction(players.get(loop), players, currentGame, "Check", 0);
+        else
+            Game.turnAction(players.get(loop), players, currentGame, "Call", 0);
+        loop = (loop + 1) % players.size();
+        takeTurn();
+    }
+
+    @Override
+    public void onBetButtonClicked(int betAmount){
+        Game.turnAction(players.get(loop), players, currentGame, "Bet", betAmount);
+        loop = (loop + 1) % players.size();
+        takeTurn();
+    }
+
+    @Override
+    public void onShowStateButtonClicked(){
+        gameState.updateUI(players, blind, smallBlind, gameRound);
+        switchToFragment(gameState);
+    }
+
+    public void startRound(){
+        deck = Functions.populate(deck); //fill deck w/ all 52 cards
+        deck.shuffle();
+        Game.roundSetup(currentGame, players, blind, smallBlind, deck); //deal cards and pay blinds
+        takeTurn();
+    }
+
+    public void takeTurn(){
+        ArrayList<String> roundState;
+        roundState = Game.iterateBetRound(currentGame, players, round, deck);
+        if(!roundState.get(0).equals("continue") && !roundState.get(0).equals("nextRound")){
+            roundOver(roundState);
         }
         else {
-            if(roundOver.get(0).equals("nextRound"))
+            if(roundState.get(0).equals("nextRound"))
                 round++;
             if (!players.get(loop).printState().equals("folded")) {
-                LinearLayout playerNameScroll = (LinearLayout) findViewById(R.id.PlayerInfo);
-                playerNameScroll.removeAllViews();
-                TextView playerInformation = new TextView(this);
-                String playerInformationString = new String();
-                for (int i = 0; i < players.size() - 1; i++) {
-                    if (players.get(i).printState().equals("folded"))
-                        playerInformationString += players.get(i).printName() + " (folded)- $" + players.get(i).printMoney() + "   ";
-                    else
-                        playerInformationString += players.get(i).printName() + " - $" + players.get(i).printMoney() + "   ";
-                }
-                if (players.get(players.size() - 1).printState().equals("folded"))
-                    playerInformationString += players.get(players.size() - 1).printName() + " (folded)- $" + players.get(players.size() - 1).printMoney();
-                else
-                    playerInformationString += players.get(players.size() - 1).printName() + " - $" + players.get(players.size() - 1).printMoney();
-                playerInformation.setText(playerInformationString);
-                playerInformation.setTextSize(18);
-                playerNameScroll.addView(playerInformation);
-                TextView PlayerName = (TextView) findViewById(R.id.PlayerName);
-                PlayerName.setText("It is now your turn " + players.get(loop).printName());
-                TextView River = (TextView) findViewById(R.id.River);
-                River.setText("River: " + currentGame.getRiver().print());
-                Button Call = (Button) findViewById(R.id.Call);
-                Call.setText(Game.callButton(players.get(loop), currentGame));
-                final int finalRound = round;
-                final CardSet finalDeck = deck;
-                final int finalLoop = loop;
-                final int finalBlind = blind;
-                final int finalSmallBlind = smallBlind;
-                final int finalGameRound = gameRound;
-                Button Hand = (Button) findViewById(R.id.Hand);
-                Hand.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        handButton(players, finalLoop);
-                    }
-                });
-                Button Fold = (Button) findViewById(R.id.Fold);
-                Fold.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        foldButton(currentGame, players, finalRound, finalDeck, finalLoop, finalBlind, finalSmallBlind, finalGameRound);
-                    }
-                });
-                Call.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        callButton(currentGame, players, finalRound, finalDeck, finalLoop, finalBlind, finalSmallBlind, finalGameRound);
-                    }
-                });
-                Button Bet = (Button) findViewById(R.id.Bet);
-                Bet.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        betButton(currentGame, players, finalRound, finalDeck, finalLoop, finalBlind, finalSmallBlind, finalGameRound);
-                    }
-                });
+                playGameUserInput.updateUI(currentGame, players, loop);
+                switchToFragment(playGameUserInput);
             } else {
                 loop = (loop + 1) % players.size();
-                screenSetup(currentGame, players, round, deck, loop, blind, smallBlind, gameRound);
+                takeTurn();
             }
         }
     }
 
-    public void handButton(ArrayList<Player> players, int loop) {
-        final Context context = this;
-        AlertDialog.Builder builder = new AlertDialog.Builder(context, android.R.style.Theme_Material_Dialog_Alert);
-        builder.setTitle("Hand")
-                .setMessage(players.get(loop).getHand().print())
-                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) { }
-                }).setIcon(android.R.drawable.ic_dialog_alert)
-                .show();
-    }
-
-    public void foldButton(Board currentGame, ArrayList<Player> players, int round, CardSet deck, int loop, int blind, int smallBlind, int gameRound) {
-        Game.takeTurn(players.get(loop), players, currentGame, "Fold", 0);
-        loop = (loop + 1) % players.size();
-        screenSetup(currentGame, players, round, deck, loop, blind, smallBlind, gameRound);
-    }
-
-    public void callButton(Board currentGame, ArrayList<Player> players, int round, CardSet deck, int loop, int blind, int smallBlind, int gameRound) {
-        Button Call = (Button)findViewById(R.id.Call);
-        if(Call.getText() == "Check")
-            Game.takeTurn(players.get(loop), players, currentGame, "Check", 0);
-        else
-            Game.takeTurn(players.get(loop), players, currentGame, "Call", 0);
-        loop = (loop + 1) % players.size();
-        screenSetup(currentGame, players, round, deck, loop, blind, smallBlind, gameRound);
-    }
-
-    public void betButton(Board currentGame, ArrayList<Player> players, int round, CardSet deck, int loop, int blind, int smallBlind, int gameRound) {
-        Context context = this;
-        LinearLayout layout = new LinearLayout(context);
-        layout.setOrientation(LinearLayout.VERTICAL);
-
-        final TextView showBetAmount = new TextView(this);
-        showBetAmount.setGravity(Gravity.CENTER);
-        layout.addView(showBetAmount);
-
-        final int minBet = currentGame.getMaxBet() - players.get(loop).getAmountBet();
-        final SeekBar betAmount = new SeekBar(this);
-        betAmount.setMax(players.get(loop).printMoney() - minBet);
-        betAmount.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                showBetAmount.setText("Bet $" + (betAmount.getProgress() + minBet));
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-
-            }
-        });
-        layout.addView(betAmount);
-
-        final Board finalCurrentGame = currentGame;
-        final ArrayList<Player> finalPlayers = players;
-        final int finalRound = round;
-        final CardSet finalDeck = deck;
-        final int finalLoop = loop;
-        final int finalBlind = blind;
-        final int finalSmallBlind = smallBlind;
-        final int finalGameRound = gameRound;
-
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Bet")
-                .setMessage("Choose amount to bet:")
-                .setView(layout)
-                .setPositiveButton("Bet", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        Game.takeTurn(finalPlayers.get(finalLoop), finalPlayers, finalCurrentGame, "Bet", betAmount.getProgress() + minBet);
-                        int sendLoop = (finalLoop + 1) % finalPlayers.size();
-                        screenSetup(finalCurrentGame, finalPlayers, finalRound, finalDeck, sendLoop, finalBlind, finalSmallBlind, finalGameRound);
-                    }
-                })
-                .setNegativeButton("Cancel", new DialogInterface.OnClickListener(){
-                    public void onClick(DialogInterface dialog, int which) { }
-                }).setIcon(android.R.drawable.ic_dialog_alert)
-                .show();
-    }
-
-    public void roundOver(ArrayList<Player> players, int blind, int smallBlind, int gameRound, ArrayList<String> winnerInfo){
+    public void roundOver(ArrayList<String> winnerInfo){
         for (int i = 0; i < players.size();) { //remove players if they busted
             if (players.get(i).printMoney() == 0) {
                 players.remove(i);
@@ -225,38 +135,12 @@ public class PlayGame extends AppCompatActivity {
             }
             gameRound = gameRound + 1;
             blind = (blind + 1) % players.size(); //move blind to next player
-            String[] playerNameArray = new String[players.size()];
-            int[] playerMoneyArray = new int[players.size()];
-            for (int i = 0; i < players.size(); i++) {
-                playerNameArray[i] = players.get(i).printName();
-                playerMoneyArray[i] = players.get(i).printMoney();
-            }
-            sendWinnerInfo(winnerInfo, playerNameArray, playerMoneyArray, blind, smallBlind, gameRound);
+
+            switchToFragment(roundOver);
         }
     }
 
-    public void sendWinnerInfo(ArrayList<String> winnerInfo, String[] playerNameArray, int[] playerMoneyArray, int blind, int smallBlind, int gameRound){
-        Intent intent = new Intent (this, RoundWinner.class);
-        Bundle extras = new Bundle();
-        extras.putStringArrayList("com.ryan.poker.winnerInfo", winnerInfo);
-        extras.putStringArray("com.ryan.poker.playerNameArray",playerNameArray);
-        extras.putIntArray("com.ryan.poker.playerMoneyArray",playerMoneyArray);
-        extras.putInt("com.ryan.poker.blind",blind);
-        extras.putInt("com.ryan.poker.smallBlind",smallBlind);
-        extras.putInt("com.ryan.poker.gameRound",gameRound);
-        intent.putExtras(extras);
-        startActivity(intent);
-        finish();
-    }
-
     public void gameOver(String winnerName){
-        Intent intent = new Intent(this, GameOver.class);
-        intent.putExtra("com.ryan.poker.winnerName", winnerName);
-        startActivity(intent);
-        finish();
-    }
 
-    @Override
-    public void onBackPressed() {
     }
 }

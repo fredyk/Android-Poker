@@ -20,8 +20,12 @@ public class PlayerCount extends AppCompatActivity {
     public void sendPlayerCount(View view){
         final Context context = this;
         EditText editText = (EditText) findViewById(R.id.editText);
-        int playerAmount = Integer.parseInt(editText.getText().toString());
-        if(playerAmount < 2){
+        int playerAmount;
+        if(!editText.getText().toString().isEmpty())
+            playerAmount = Integer.parseInt(editText.getText().toString());
+        else
+            playerAmount = 0;
+        if(playerAmount < 2 || editText.getText().toString().isEmpty()){
             AlertDialog.Builder builder = new AlertDialog.Builder(context, android.R.style.Theme_Material_Dialog_Alert);
             builder.setTitle("Error")
                     .setMessage("Invalid amount of players. Value must be at least 2.")

@@ -7,10 +7,10 @@
     tools:context="com.ryan.poker.GameOver">
 
     <TextView
-        android:id="@+id/winner"
+        android:id="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="TextView"
-        tools:layout_editor_absoluteX="150dp"
-        tools:layout_editor_absoluteY="95dp" />
+        android:text="GameOver"
+        tools:layout_editor_absoluteX="102dp"
+        tools:layout_editor_absoluteY="109dp" />
 </android.support.constraint.ConstraintLayout>

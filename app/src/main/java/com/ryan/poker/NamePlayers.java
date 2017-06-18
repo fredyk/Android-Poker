@@ -51,7 +51,7 @@ public class NamePlayers extends AppCompatActivity {
                 boolean duplicates=false;
                 for (int j=0;j<playerAmount;j++) {
                     for (int k = j + 1; k < playerAmount; k++) {
-                        if (k != j && playerNames[k].getText().toString().equals(playerNames[j].getText().toString()))
+                        if ((k != j && playerNames[k].getText().toString().equals(playerNames[j].getText().toString())) || (playerNames[j].getText().toString().isEmpty() || playerNames[k].getText().toString().isEmpty()))
                             duplicates = true;
                     }
                 }
@@ -78,17 +78,9 @@ public class NamePlayers extends AppCompatActivity {
     }
 
     public void sendPlayerInfo(String[] playerNameArray){
-        Intent intent = new Intent (this, GameState.class);
+        Intent intent = new Intent (this, PlayGame.class);
         Bundle extras = new Bundle();
-        int[] playerMoneyArray = new int[playerNameArray.length];
-        for(int i = 0; i < playerNameArray.length; i++){
-            playerMoneyArray[i] = 20000;
-        }
-        extras.putStringArray("com.ryan.poker.playerNameArray",playerNameArray);
-        extras.putIntArray("com.ryan.poker.playerMoneyArray",playerMoneyArray);
-        extras.putInt("com.ryan.poker.blind",0);
-        extras.putInt("com.ryan.poker.smallBlind",400);
-        extras.putInt("com.ryan.poker.gameRound",1);
+        extras.putStringArray("com.ryan.poker.playerNameArray", playerNameArray);
         intent.putExtras(extras);
         startActivity(intent);
     }

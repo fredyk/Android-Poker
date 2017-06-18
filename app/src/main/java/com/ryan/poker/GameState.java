@@ -1,99 +1,140 @@
 package com.ryan.poker;
 
-import android.content.Intent;
 import android.graphics.Typeface;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-public class GameState extends AppCompatActivity {
+import org.w3c.dom.Text;
+
+import java.util.ArrayList;
+
+public class GameState extends Fragment implements View.OnClickListener {
+
+    public interface Listener {
+        public void onStartRoundButtonClicked();
+    }
+
+    Listener mListener = null;
+
+    ArrayList<Player> players;
+    int blind;
+    int smallBlind;
+    int gameRound;
+
+    public void setArguments(ArrayList<Player> iPlayers, int iBlind, int iSmallBlind, int iGameRound){
+        players = iPlayers;
+        blind = iBlind;
+        smallBlind = iSmallBlind;
+        gameRound = iGameRound;
+    }
+
+    public void updateUI(ArrayList<Player> players, int blind, int smallBlind, int gameRound){
+        if (getActivity() == null) return;
+        LinearLayout playerNameScroll = (LinearLayout)getActivity().findViewById(R.id.LinearLayout);
+        playerNameScroll.removeAllViews();
+        TextView DisplayRound = (TextView)getActivity().findViewById(R.id.GameState_DisplayRound);
+        DisplayRound.setText("Round " + gameRound);
+        playerNameScroll.addView(DisplayRound);
+        TextView BlindTitle = (TextView)getActivity().findViewById(R.id.GameState_BlindTitle);
+        playerNameScroll.addView(BlindTitle);
+        TextView Blind1 = (TextView)getActivity().findViewById(R.id.GameState_Blind1);
+        Blind1.setText(players.get(blind).printName() + " - $" + smallBlind);
+        playerNameScroll.addView(Blind1);
+        TextView Blind2 = (TextView)getActivity().findViewById(R.id.GameState_Blind2);
+        Blind2.setText(players.get(blind + 1).printName() + " - $" + smallBlind*2);
+        playerNameScroll.addView(Blind2);
+        TextView PlayerTitle = (TextView)getActivity().findViewById(R.id.GameState_PlayerTitle);
+        playerNameScroll.addView(PlayerTitle);
+        TextView[] playerTextView = new TextView[players.size()];
+        for(int i = 0; i < players.size(); i++){
+            playerTextView[i] = new TextView(getActivity());
+            playerTextView[i].setText(players.get(i).printName() + " - $" + players.get(i).printMoney());
+            playerTextView[i].setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+            playerTextView[i].setTextSize(24);
+            playerNameScroll.addView(playerTextView[i]);
+        }
+        Button Enter = (Button)getActivity().findViewById(R.id.GameState_EnterButton);
+        playerNameScroll.addView(Enter);
+    }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_game_state);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View v = inflater.inflate(R.layout.fragment_game_state, container, false);
 
-        Bundle extras = getIntent().getExtras();
-        final String[] playerNameArray = extras.getStringArray("com.ryan.poker.playerNameArray");
-        final int[] playerMoneyArray = extras.getIntArray("com.ryan.poker.playerMoneyArray");
-        final int blind = extras.getInt("com.ryan.poker.blind");
-        final int smallBlind = extras.getInt("com.ryan.poker.smallBlind");
-        final int gameRound = extras.getInt("com.ryan.poker.gameRound");
-        LinearLayout playerNameScroll = (LinearLayout) findViewById(R.id.LinearLayout);
+        LinearLayout playerNameScroll = (LinearLayout)v.findViewById(R.id.LinearLayout);
         playerNameScroll.setGravity(1);
 
-        TextView DisplayRound = new TextView(this);
+        TextView DisplayRound = new TextView(getActivity());
+        DisplayRound.setId(R.id.GameState_DisplayRound);
         DisplayRound.setText("Round " + gameRound);
         DisplayRound.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
         DisplayRound.setTextSize(56);
         DisplayRound.setTypeface(null, Typeface.BOLD);
         playerNameScroll.addView(DisplayRound);
 
-        TextView BlindTitle = new TextView(this);
+        TextView BlindTitle = new TextView(getActivity());
+        BlindTitle.setId(R.id.GameState_BlindTitle);
         BlindTitle.setText("Blinds");
         BlindTitle.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
         BlindTitle.setTextSize(34);
         BlindTitle.setTypeface(null, Typeface.BOLD);
         playerNameScroll.addView(BlindTitle);
 
-        TextView Blind1 = new TextView(this);
-        Blind1.setText(playerNameArray[blind] + " - $" + smallBlind);
+        TextView Blind1 = new TextView(getActivity());
+        Blind1.setId(R.id.GameState_Blind1);
+        Blind1.setText(players.get(blind).printName() + " - $" + smallBlind);
         Blind1.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
         Blind1.setTextSize(24);
         playerNameScroll.addView(Blind1);
 
-        TextView Blind2 = new TextView(this);
-        Blind2.setText(playerNameArray[blind+1] + " - $" + smallBlind*2);
+        TextView Blind2 = new TextView(getActivity());
+        Blind2.setId(R.id.GameState_Blind2);
+        Blind2.setText(players.get(blind + 1).printName() + " - $" + smallBlind*2);
         Blind2.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
         Blind2.setTextSize(24);
         playerNameScroll.addView(Blind2);
 
-        TextView PlayerTitle = new TextView(this);
+        TextView PlayerTitle = new TextView(getActivity());
+        PlayerTitle.setId(R.id.GameState_PlayerTitle);
         PlayerTitle.setText("Players");
         PlayerTitle.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
         PlayerTitle.setTextSize(34);
         PlayerTitle.setTypeface(null, Typeface.BOLD);
         playerNameScroll.addView(PlayerTitle);
 
-        TextView[] playerTextView = new TextView[playerNameArray.length];
-        for(int i = 0; i < playerNameArray.length; i++){
-            playerTextView[i] = new TextView(this);
-            playerTextView[i].setText(playerNameArray[i] + " - $" + playerMoneyArray[i]);
+        TextView[] playerTextView = new TextView[players.size()];
+        for(int i = 0; i < players.size(); i++){
+            playerTextView[i] = new TextView(getActivity());
+            playerTextView[i].setText(players.get(i).printName() + " - $" + players.get(i).printMoney());
             playerTextView[i].setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
             playerTextView[i].setTextSize(24);
             playerNameScroll.addView(playerTextView[i]);
         }
 
-        Button Enter = new Button(this);
+        Button Enter = new Button(getActivity());
+        Enter.setId(R.id.GameState_EnterButton);
         Enter.setText("Continue");
         Enter.setTextSize(14);
-        Enter.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                sendPlayerInfo(playerNameArray, playerMoneyArray, blind, smallBlind, gameRound);
-            }
-        });
+        Enter.setOnClickListener(this);
         Enter.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
         playerNameScroll.addView(Enter);
+
+        return v;
     }
 
-    public void sendPlayerInfo(String[] playerNameArray, int[] playerMoneyArray, int blind, int smallBlind, int gameRound){
-        Intent intent = new Intent (this, PlayGame.class);
-        Bundle extras = new Bundle();
-        extras.putStringArray("com.ryan.poker.playerNameArray",playerNameArray);
-        extras.putIntArray("com.ryan.poker.playerMoneyArray",playerMoneyArray);
-        extras.putInt("com.ryan.poker.blind",blind);
-        extras.putInt("com.ryan.poker.smallBlind",smallBlind);
-        extras.putInt("com.ryan.poker.gameRound",gameRound);
-        intent.putExtras(extras);
-        startActivity(intent);
-        finish();
+    public void setListener(Listener l) {
+        mListener = l;
     }
 
     @Override
-    public void onBackPressed() {
+    public void onClick(View v){
+        mListener.onStartRoundButtonClicked();
     }
 }
