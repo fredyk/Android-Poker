@@ -117,7 +117,7 @@ public class Game {
                     }
                 }
                 while (currentGame.getPot() > 0) {
-                    int numFinalists = finalists.size();
+                    //int numFinalists = finalists.size();
                     winners = FindWinner.findWinner(finalists);
                     if (winners.size() == 1) {
                         for (int i = 0; i < players.size(); i++) {
@@ -237,5 +237,17 @@ public class Game {
         else
             out.add("continue");
         return out;
+    }
+
+    public static void resetRound(Board currentGame, ArrayList<Player> players){
+        currentGame.clearPot();
+        currentGame.clearMaxBet();
+        currentGame.clearRiver();
+        for(Player player : players){
+            player.clearAmountBet();
+            player.clearHand();
+            player.clearHandResults();
+            player.setState("active|nb");
+        }
     }
 }

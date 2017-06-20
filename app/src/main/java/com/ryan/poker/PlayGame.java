@@ -1,5 +1,6 @@
 package com.ryan.poker;
 
+import android.content.Intent;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -42,11 +43,8 @@ public class PlayGame extends AppCompatActivity implements GameState.Listener, P
         playGameUserInput.setListener(this);
         roundOver.setListener(this);
 
-        gameState.setArguments(players, blind, smallBlind, gameRound);
-        playGameUserInput.setArguments(currentGame, players, loop);
-
-
         //start by showing game state
+        gameState.setArguments(players, blind, smallBlind, gameRound);
         getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, gameState).commit();
     }
 
@@ -87,7 +85,7 @@ public class PlayGame extends AppCompatActivity implements GameState.Listener, P
 
     @Override
     public void onShowStateButtonClicked(){
-        gameState.updateUI(players, blind, smallBlind, gameRound);
+        gameState.setArguments(players, blind, smallBlind, gameRound);
         switchToFragment(gameState);
     }
 
@@ -95,6 +93,8 @@ public class PlayGame extends AppCompatActivity implements GameState.Listener, P
         deck = Functions.populate(deck); //fill deck w/ all 52 cards
         deck.shuffle();
         Game.roundSetup(currentGame, players, blind, smallBlind, deck); //deal cards and pay blinds
+        playGameUserInput.setArguments(currentGame, players, loop);
+        switchToFragment(playGameUserInput);
         takeTurn();
     }
 
@@ -107,10 +107,13 @@ public class PlayGame extends AppCompatActivity implements GameState.Listener, P
         else {
             if(roundState.get(0).equals("nextRound"))
                 round++;
-            if (!players.get(loop).printState().equals("folded")) {
+            if (players.get(loop).printMoney() == 0) {
+                players.get(loop).setState("active|b");
+                loop = (loop + 1) % players.size();
+                takeTurn();
+            } else if (!players.get(loop).printState().equals("folded")) {
                 playGameUserInput.updateUI(currentGame, players, loop);
-                switchToFragment(playGameUserInput);
-            } else {
+            }  else {
                 loop = (loop + 1) % players.size();
                 takeTurn();
             }
@@ -130,17 +133,21 @@ public class PlayGame extends AppCompatActivity implements GameState.Listener, P
             gameOver(players.get(0).printName());
         }
         else {
-            if (gameRound % 5 == 0) {
-                smallBlind += 200;
-            }
-            gameRound = gameRound + 1;
-            blind = (blind + 1) % players.size(); //move blind to next player
-
+            roundOver.setArguments(players.size(), winnerInfo, currentGame.getRiver().print());
             switchToFragment(roundOver);
+            Game.resetRound(currentGame, players);
+            if (gameRound % 5 == 0)
+                smallBlind += 200;
+            blind = (blind + 1) % players.size();
+            gameRound = gameRound + 1;
+            loop = (blind + 2) % players.size();
+            round = 1;
         }
     }
 
     public void gameOver(String winnerName){
-
+        Intent intent = new Intent(this, GameOver.class);
+        intent.putExtra("com.ryan.poker.winnerName", winnerName);
+        startActivity(intent);
     }
 }

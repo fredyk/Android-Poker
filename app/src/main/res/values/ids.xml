@@ -1,10 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <item name="PlayGameUserInput_playerInformation" type="id"/>
-    <item name="GameState_DisplayRound" type="id"/>
-    <item name="GameState_BlindTitle" type="id"/>
-    <item name="GameState_Blind1" type="id"/>
-    <item name="GameState_Blind2" type="id"/>
-    <item name="GameState_PlayerTitle" type="id"/>
-    <item name="GameState_EnterButton" type="id"/>
 </resources>
