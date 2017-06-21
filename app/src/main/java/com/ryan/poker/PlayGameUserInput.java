@@ -4,11 +4,13 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
+import android.text.InputType;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -120,30 +122,43 @@ public class PlayGameUserInput extends Fragment implements View.OnClickListener 
     }
 
     public void onHandButtonClicked(){
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), android.R.style.Theme_Material_Dialog_Alert);
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle("Hand")
                 .setMessage(players.get(loop).getHand().print())
                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) { }
-                }).setIcon(android.R.drawable.ic_dialog_alert)
-                .show();
+                }).show();
     }
 
     public void openBetDialog(){
+        final int minBet = currentGame.getMaxBet() - players.get(loop).getAmountBet();
+
         LinearLayout layout = new LinearLayout(getActivity());
         layout.setOrientation(LinearLayout.VERTICAL);
 
-        final TextView showBetAmount = new TextView(getActivity());
-        showBetAmount.setGravity(Gravity.CENTER);
-        layout.addView(showBetAmount);
+        LinearLayout displayBetAmount = new LinearLayout(getActivity());
+        displayBetAmount.setOrientation(LinearLayout.HORIZONTAL);
+        displayBetAmount.setGravity(Gravity.CENTER);
 
-        final int minBet = currentGame.getMaxBet() - players.get(loop).getAmountBet();
+        final TextView betAmountTitle = new TextView(getActivity());
+        betAmountTitle.setText("Bet: $");
+        displayBetAmount.addView(betAmountTitle);
+
+        final EditText showBetAmount = new EditText(getActivity());
+        showBetAmount.setText(Integer.toString(minBet));
+        showBetAmount.setInputType(InputType.TYPE_CLASS_NUMBER);
+        displayBetAmount.addView(showBetAmount);
+
+        layout.addView(displayBetAmount);
+        showBetAmount.setSelection(showBetAmount.getText().length());
+
         final SeekBar betAmount = new SeekBar(getActivity());
         betAmount.setMax(players.get(loop).printMoney() - minBet);
         betAmount.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                showBetAmount.setText("Bet $" + (betAmount.getProgress() + minBet));
+                showBetAmount.setText(Integer.toString(betAmount.getProgress() + minBet));
+                showBetAmount.setSelection(showBetAmount.getText().length());
             }
 
             @Override
@@ -164,12 +179,20 @@ public class PlayGameUserInput extends Fragment implements View.OnClickListener 
                 .setView(layout)
                 .setPositiveButton("Bet", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        mListener.onBetButtonClicked(betAmount.getProgress() + minBet);
+                        if(Integer.parseInt(showBetAmount.getText().toString()) < minBet || Integer.parseInt(showBetAmount.getText().toString()) > players.get(loop).printMoney()){
+                            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                            builder.setTitle("Error")
+                                    .setMessage("Bet amount must be between $" + minBet + " and $" + players.get(loop).printMoney())
+                                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int which) { }
+                                    }).show();
+                        }
+                        else
+                            mListener.onBetButtonClicked(Integer.parseInt(showBetAmount.getText().toString()));
                     }
                 })
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener(){
                     public void onClick(DialogInterface dialog, int which) { }
-                }).setIcon(android.R.drawable.ic_dialog_alert)
-                .show();
+                }).show();
     }
 }

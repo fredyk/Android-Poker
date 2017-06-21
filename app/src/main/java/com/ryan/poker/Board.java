@@ -5,12 +5,10 @@ public class Board {
     public int pot;
     public int maxBet;
     public CardSet river = new CardSet();
-    public boolean devMode;
 
     public Board() {
         pot = 0;
         maxBet = 0;
-        devMode = false;
     }
 
     public void addToPot(int x) {
@@ -27,14 +25,6 @@ public class Board {
 
     public void addToRiver(Card x) {
         river.add(x);
-    }
-
-    public void setDevMode(boolean x){
-        devMode = x;
-    }
-
-    public boolean getDevMode(){
-        return devMode;
     }
 
     public int getPot() {

@@ -8,14 +8,17 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
-        <activity android:name=".HomeScreen">
+        android:theme="@style/Theme.AppCompat.Light.NoActionBar.FullScreen">
+        <activity
+            android:name=".SplashActivity"
+            android:theme="@style/SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".HomeScreen" />
         <activity
             android:name=".PlayerCount"
             android:parentActivityName=".HomeScreen" />
@@ -23,7 +26,7 @@
             android:name=".NamePlayers"
             android:parentActivityName=".PlayerCount" />
         <activity android:name=".PlayGame" />
-        <activity android:name=".GameOver"></activity>
+        <activity android:name=".GameOver" />
     </application>
 
 </manifest>

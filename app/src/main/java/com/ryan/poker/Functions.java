@@ -22,10 +22,6 @@ public class Functions {
         return out;
     }
 
-    public static boolean playerCompare(Player a, Player b) {
-        return (a.getAmountBet() < b.getAmountBet());
-    }
-
     public static CardSet populate(CardSet deck) { //creates full deck of cards in order
         CardSet fullDeck = new CardSet();
         String suits[] = { "C", "D", "H", "S" };

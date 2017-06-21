@@ -21,8 +21,9 @@ public class NamePlayers extends AppCompatActivity {
         setContentView(R.layout.activity_name_players);
         final Context context = this;
 
-        Intent intent = getIntent();
-        final int playerAmount = intent.getIntExtra("com.ryan.poker.playerAmount", 0);
+        Bundle extras = getIntent().getExtras();
+        final int playerAmount = extras.getInt("com.ryan.poker.playerAmount", 0);
+        final int playerMoney = extras.getInt("com.ryan.poker.playerStartingMoney", 0);
 
         final EditText[] playerNames = new EditText[playerAmount];
         TextView[] playerLabels = new TextView[playerAmount];
@@ -60,16 +61,15 @@ public class NamePlayers extends AppCompatActivity {
                     for(int i = 0; i < playerAmount; i++) {
                         playerNameArray[i] = playerNames[i].getText().toString();
                     }
-                    sendPlayerInfo(playerNameArray);
+                    sendPlayerInfo(playerNameArray, playerMoney);
                 }
                 else{
-                    AlertDialog.Builder builder = new AlertDialog.Builder(context, android.R.style.Theme_Material_Dialog_Alert);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(context);
                     builder.setTitle("Error")
                             .setMessage("All names must be unique.")
                             .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int which) { }
-                            }).setIcon(android.R.drawable.ic_dialog_alert)
-                            .show();
+                            }).show();
                 }
             }
         });
@@ -77,10 +77,11 @@ public class NamePlayers extends AppCompatActivity {
         playerNameScroll.addView(Enter);
     }
 
-    public void sendPlayerInfo(String[] playerNameArray){
+    public void sendPlayerInfo(String[] playerNameArray, int playerMoney){
         Intent intent = new Intent (this, PlayGame.class);
         Bundle extras = new Bundle();
         extras.putStringArray("com.ryan.poker.playerNameArray", playerNameArray);
+        extras.putInt("com.ryan.poker.playerStartingMoney", playerMoney);
         intent.putExtras(extras);
         startActivity(intent);
     }

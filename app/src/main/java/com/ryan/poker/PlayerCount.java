@@ -1,15 +1,15 @@
 package com.ryan.poker;
 
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.EditText;
+import android.widget.TextView;
 
 public class PlayerCount extends AppCompatActivity {
+
+    int playerCount = 2;
+    int playerMoney = 20000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -17,27 +17,45 @@ public class PlayerCount extends AppCompatActivity {
         setContentView(R.layout.activity_player_count);
     }
 
+    public void increasePlayerCount(View view) {
+        if(playerCount < 10)
+            playerCount = playerCount + 1;
+        displayPlayerCount(playerCount);
+    }
+
+    public void decreasePlayerCount(View view) {
+        if(playerCount > 2)
+            playerCount = playerCount - 1;
+        displayPlayerCount(playerCount);
+    }
+
+    private void displayPlayerCount(int number) {
+        TextView displayInteger = (TextView) findViewById(R.id.playerCount);
+        displayInteger.setText(Integer.toString(number));
+    }
+
+    public void increasePlayerMoney(View view){
+        playerMoney = playerMoney + 5000;
+        displayPlayerMoney(playerMoney);
+    }
+
+    public void decreasePlayerMoney(View view){
+        if(playerMoney > 5000)
+            playerMoney = playerMoney - 5000;
+        displayPlayerMoney(playerMoney);
+    }
+
+    public void displayPlayerMoney(int number){
+        TextView displayInteger = (TextView) findViewById(R.id.playerMoney);
+        displayInteger.setText("$" + Integer.toString(number));
+    }
+
     public void sendPlayerCount(View view){
-        final Context context = this;
-        EditText editText = (EditText) findViewById(R.id.editText);
-        int playerAmount;
-        if(!editText.getText().toString().isEmpty())
-            playerAmount = Integer.parseInt(editText.getText().toString());
-        else
-            playerAmount = 0;
-        if(playerAmount < 2 || editText.getText().toString().isEmpty()){
-            AlertDialog.Builder builder = new AlertDialog.Builder(context, android.R.style.Theme_Material_Dialog_Alert);
-            builder.setTitle("Error")
-                    .setMessage("Invalid amount of players. Value must be at least 2.")
-                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) { }
-                    }).setIcon(android.R.drawable.ic_dialog_alert)
-                    .show();
-        }
-        else {
-            Intent intent = new Intent(this, NamePlayers.class);
-            intent.putExtra("com.ryan.poker.playerAmount", playerAmount);
-            startActivity(intent);
-        }
+        Intent intent = new Intent(this, NamePlayers.class);
+        Bundle extras = new Bundle();
+        extras.putInt("com.ryan.poker.playerAmount", playerCount);
+        extras.putInt("com.ryan.poker.playerStartingMoney", playerMoney);
+        intent.putExtras(extras);
+        startActivity(intent);
     }
 }

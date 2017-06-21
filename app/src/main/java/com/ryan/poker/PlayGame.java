@@ -15,8 +15,8 @@ public class PlayGame extends AppCompatActivity implements GameState.Listener, P
 
     //initialize game variables
     Board currentGame = new Board();
-    int playerStartingMoney = 20000; //players start with $20000
-    int smallBlind = 400; //small blind is $400
+    int playerStartingMoney;
+    int smallBlind;
     int blind = 0; //start blind with first player
     int gameRound = 1; //start with first round
     ArrayList<Player> players = new ArrayList<>();
@@ -32,6 +32,9 @@ public class PlayGame extends AppCompatActivity implements GameState.Listener, P
         //Get player names from previous page
         Bundle extras = getIntent().getExtras();
         String[] playerNameArray = extras.getStringArray("com.ryan.poker.playerNameArray");
+        playerStartingMoney = extras.getInt("com.ryan.poker.playerStartingMoney", 0);
+        smallBlind = playerStartingMoney / 50; //small blind starts as 1/50 of amount of money players have
+
         players = Game.playerSetup(playerNameArray, playerStartingMoney);
         loop = (blind + 2) % players.size();
 
@@ -150,4 +153,7 @@ public class PlayGame extends AppCompatActivity implements GameState.Listener, P
         intent.putExtra("com.ryan.poker.winnerName", winnerName);
         startActivity(intent);
     }
+
+    @Override
+    public void onBackPressed() { }
 }
