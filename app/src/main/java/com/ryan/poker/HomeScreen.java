@@ -17,4 +17,7 @@ public class HomeScreen extends AppCompatActivity {
         Intent intent = new Intent(this, PlayerCount.class);
         startActivity(intent);
     }
+
+    @Override
+    public void onBackPressed() { }
 }
