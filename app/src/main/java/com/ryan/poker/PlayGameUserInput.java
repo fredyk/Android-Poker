@@ -37,7 +37,8 @@ public class PlayGameUserInput extends Fragment implements View.OnClickListener 
         loop = iLoop;
     }
 
-    public void updateUI(Board currentGame, ArrayList<Player> players, int loop){
+    public void updateUI(Board currentGame, ArrayList<Player> players, int iLoop){
+        loop = iLoop;
         if (getActivity() == null) return;
         TextView playerInformation = (TextView)getActivity().findViewById(R.id.PlayGameUserInput_playerInformation);
         String playerInformationString = new String();
