@@ -73,14 +73,24 @@ public class Game {
     public static ArrayList<String> iterateBetRound(Board currentGame, ArrayList<Player> players, int round, CardSet deck) {
         ArrayList<String> out = new ArrayList();
         int currentPlayers = 0;
+        int playersDoneBetting = 0;
         for (int i = 0; i < players.size(); i++) { //find amount of players still in round
             if (players.get(i).printState().equals("active|nb") || players.get(i).printState().equals("active|b"))
                 currentPlayers++;
         }
-        int playersDoneBetting = 0;
-        for (int i = 0; i < players.size(); i++) { //check if everyone is done betting
-            if (players.get(i).printState().equals("active|b")) {
-                playersDoneBetting++;
+        if(currentPlayers == 1){ //if only one person is left then deal rest of river and move to next round
+            for(int i = currentGame.getRiver().size(); i < 5; i++) {
+                currentGame.addToRiver(deck.getFirst());
+                deck.remove(deck.getFirst());
+            }
+            round = 4;
+            playersDoneBetting = currentPlayers;
+        }
+        else {
+            for (int i = 0; i < players.size(); i++) { //check if everyone is done betting
+                if (players.get(i).printState().equals("active|b")) {
+                    playersDoneBetting++;
+                }
             }
         }
         if (playersDoneBetting == currentPlayers) { //move to second round
@@ -117,7 +127,7 @@ public class Game {
                     }
                 }
                 while (currentGame.getPot() > 0) {
-                    //int numFinalists = finalists.size();
+                    out.add(Integer.toString(finalists.size()));
                     winners = FindWinner.findWinner(finalists);
                     if (winners.size() == 1) {
                         for (int i = 0; i < players.size(); i++) {

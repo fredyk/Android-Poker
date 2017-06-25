@@ -136,7 +136,12 @@ public class PlayGame extends AppCompatActivity implements GameState.Listener, P
             gameOver(players.get(0).printName());
         }
         else {
-            roundOver.setArguments(players.size(), winnerInfo, currentGame.getRiver().print());
+            int currentPlayers = 0;
+            for (int i = 0; i < players.size(); i++) { //find amount of players still in round
+                if (!players.get(i).printState().equals("folded"))
+                    currentPlayers++;
+            }
+            roundOver.setArguments(currentPlayers, winnerInfo, currentGame.getRiver().print());
             switchToFragment(roundOver);
             Game.resetRound(currentGame, players);
             if (gameRound % 5 == 0)

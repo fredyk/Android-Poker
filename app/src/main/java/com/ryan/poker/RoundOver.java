@@ -42,7 +42,7 @@ public class RoundOver extends Fragment implements View.OnClickListener {
         TextView winners = new TextView(getActivity());
         winners.setGravity(Gravity.CENTER);
         String winnerNames = new String();
-        for(int i = 0; i < (winnerInfo.size() - (playerAmount*3)); i++)
+        for(int i = 1; i < (winnerInfo.size() - (playerAmount*3)); i++)
             winnerNames += winnerInfo.get(i);
         winners.setText(winnerNames);
         winners.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
@@ -58,7 +58,7 @@ public class RoundOver extends Fragment implements View.OnClickListener {
 
         TextView[] playerTextView = new TextView[playerAmount];
         int j = 0;
-        for(int i = (winnerInfo.size() - (playerAmount*3)); i < winnerInfo.size(); i=i+3){
+        for(int i = (winnerInfo.size() - (playerAmount*3)); i < (winnerInfo.size()); i=i+3){
             playerTextView[j] = new TextView(getActivity());
             playerTextView[j].setText(winnerInfo.get(i) + winnerInfo.get(i+1) + winnerInfo.get(i+2));
             playerTextView[j].setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
