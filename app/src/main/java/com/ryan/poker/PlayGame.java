@@ -124,6 +124,11 @@ public class PlayGame extends AppCompatActivity implements GameState.Listener, P
     }
 
     public void roundOver(ArrayList<String> winnerInfo){
+        int currentPlayers = 0;
+        for (int i = 0; i < players.size(); i++) { //find amount of players still in round
+            if (!players.get(i).printState().equals("folded"))
+                currentPlayers++;
+        }
         for (int i = 0; i < players.size();) { //remove players if they busted
             if (players.get(i).printMoney() == 0) {
                 players.remove(i);
@@ -136,11 +141,6 @@ public class PlayGame extends AppCompatActivity implements GameState.Listener, P
             gameOver(players.get(0).printName());
         }
         else {
-            int currentPlayers = 0;
-            for (int i = 0; i < players.size(); i++) { //find amount of players still in round
-                if (!players.get(i).printState().equals("folded"))
-                    currentPlayers++;
-            }
             roundOver.setArguments(currentPlayers, winnerInfo, currentGame.getRiver().print());
             switchToFragment(roundOver);
             Game.resetRound(currentGame, players);
